@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="project_invoice_plan_create_wizard" model="ir.ui.view">
+        <field name="name">project_invoice_plan_create_wizard</field>
+        <field name="model">project.invoice.plan.create.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create invoice plan">
+                <header>
+                    <button string="Generate plan" type="object"
+                            name="button_create_plan"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="project_id"/>
+                        <field name="partner_id"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="invoice_date"/>
+                        <field name="name"/>
+                        
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_create_invoice_plan_wizard"
+            model="ir.actions.act_window">
+        <field name="name">Create project invoice plan</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">project.invoice.plan.create.wizard</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="project_invoice_plan_create_wizard"/>
+        <field name="target">new</field>
+    </record>
+    
+</odoo>

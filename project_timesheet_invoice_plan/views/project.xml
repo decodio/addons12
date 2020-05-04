@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="project_invoice_plan_inehrit" model="ir.ui.view">
+        <field name="name">project.invoice.plan.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Invoice plans">
+                    <button string="Create invoice plan"
+                            type="action"
+                            name="%(action_create_invoice_plan_wizard)d"
+                            context="{
+                                'default_project_id':id,
+                                'default_partner_id':partner_id
+                            }"/>
+                    <field name="invoice_plan_ids"/>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>
