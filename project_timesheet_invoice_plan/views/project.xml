@@ -5,6 +5,9 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="currency_id" />
+            </field>
             <notebook position="inside">
                 <page string="Invoice plans">
                     <button string="Create invoice plan"

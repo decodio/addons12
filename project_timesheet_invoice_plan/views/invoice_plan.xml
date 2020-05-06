@@ -7,10 +7,13 @@
             <tree string="Invoice plans">
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="project_id"/>
-                <field name="invoice_id"/>
                 <field name="invoice_date"/>
                 <field name="partner_id"/>
-                <field name="state"/>
+                <field name="currency_id" />
+                <field name="invoice_id" invisible="1"/>
+                <button name="invoice_create" context="{'active_id':active_id}"
+                        attrs="{'invisible':[('invoice_id','!=', False)]}"
+                        string="Create Invoice" type="object" icon="fa-arrow-right"/>
             </tree>
         </field>
     </record>
@@ -20,24 +23,96 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <group>
-                        <field name="company_id" groups="base.group_multi_company"/>
-                        <field name="name"/>
-                        <field name="project_id"/>
-                        <field name="invoice_id"/>
-                        <field name="invoice_date"/>
-                        <field name="partner_id"/>
-                        <field name="description"/>
-                        <field name="note"/>
-                        <field name="invoice_plan_item_ids"/>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="name"/>
+                            <field name="project_id"/>
+                            <field name="invoice_date"/>
+                            <field name="partner_id"/>
+                            <field name="currency_id" />
+                        </group>
+                        <group>
+                            <field name="invoice_id" attrs="{'invisible':[('invoice_id','=', False)]}"/>
+                            <button name="invoice_create"
+                                    string="Create Invoice"
+                                    type="object"
+                                    attrs="{'invisible':[('invoice_id','!=', False)]}"
+                                    colspan="2"
+                                    class="oe_highlight"/>
+
+                        </group>
+                    </group>
+                    <group>
+                        <notebook>
+                            <page string="Lines">
+                                <field name="project_invoice_plan_line_ids" nolabel='1' />
+                            </page>
+                            <page string="Description">
+                                <group colspan="4">
+                                    <field name="description" nolabel='1' />
+                                </group>
+                            </page>
+                             <page string="Note">
+                                <group colspan="4">
+                                    <field name="note" nolabel='1' />
+                                </group>
+                            </page>
+                        </notebook>
                     </group>
                 </sheet>
             </form>
         </field>
     </record>
-    <!-- todo search -->
-    
+
+    <record id="project_invoice_plan_line_tree" model="ir.ui.view">
+        <field name="name">project.invoice.plan.line.tree</field>
+        <field name="model">project.invoice.plan.line</field>
+        <field name="arch" type="xml">
+            <tree string="Invoice plan lines">
+                <field name="product_id" />
+                <field name="price_unit"/>
+                <field name="quantity"/>
+                <field name="amount"/>
+            </tree>
+        </field>
+    </record>
+    <record id="project_invoice_plan_line_form" model="ir.ui.view">
+        <field name="name">project.invoice.plan.line.form</field>
+        <field name="model">project.invoice.plan.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="product_id"/>
+                            <field name="price_unit"/>
+                            <field name="quantity"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    <group>
+                        <notebook>
+                            <page string="Description">
+                                <group colspan="4">
+                                    <field name="description" nolabel='1' />
+                                </group>
+                            </page>
+                            <page string="Timesheet Lines" invisible="1">
+                                <field name="account_analytic_line_ids" nolabel='1' />
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
 </odoo>

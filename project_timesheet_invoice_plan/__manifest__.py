@@ -24,8 +24,8 @@
     'data': [
         'security/ir.model.access.csv',
         'views/hr_employee.xml',
-        'views/account_invoice.xml',
         'views/invoice_plan.xml',
+        'views/timesheet_view.xml',
         'wizard/create_project_invoice_plan_view.xml',
         'views/project.xml',
     ],

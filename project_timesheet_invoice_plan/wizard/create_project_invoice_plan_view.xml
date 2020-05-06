@@ -5,10 +5,6 @@
         <field name="model">project.invoice.plan.create.wizard</field>
         <field name="arch" type="xml">
             <form string="Create invoice plan">
-                <header>
-                    <button string="Generate plan" type="object"
-                            name="button_create_plan"/>
-                </header>
                 <sheet>
                     <group>
                         <field name="project_id"/>
@@ -16,10 +12,12 @@
                         <field name="date_from"/>
                         <field name="date_to"/>
                         <field name="invoice_date"/>
-                        <field name="name"/>
-                        
                     </group>
                 </sheet>
+                <footer>
+                    <button string="Generate plan" type="object"  name="button_create_plan"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
             </form>
         </field>
     </record>
@@ -33,5 +31,5 @@
         <field name="view_id" ref="project_invoice_plan_create_wizard"/>
         <field name="target">new</field>
     </record>
-    
+
 </odoo>

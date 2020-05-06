@@ -6,16 +6,13 @@
         <field name="inherit_id"
                ref="hr_timesheet.hr_employee_view_form_inherit_timesheet"/>
         <field name="arch" type="xml">
-<!--            <xpath expr=".//label[@for='timesheet_cost']" position="before">-->
-<!--                <label for="timesheet_product_id"/>-->
-<!--                <div>-->
-<!--                    <field name="timesheet_product_id"/>-->
-<!--                </div>-->
-<!--            </xpath>-->
-            <field name="timesheet_cost" position="after">
-                <field name="timesheet_product_id"/>
-            </field>
+            <xpath expr="//label[@for='timesheet_cost']/following-sibling::div" position="after">
+                <label for="timesheet_product_id"/>
+                <div>
+                    <field name="timesheet_product_id"/>
+                </div>
+            </xpath>
         </field>
     </record>
-    
+
 </odoo>
