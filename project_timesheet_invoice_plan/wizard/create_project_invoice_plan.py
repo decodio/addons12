@@ -67,7 +67,7 @@ class CreateProjectInvoicePlanWizard(models.TransientModel):
         select
                 SUM(aal.unit_amount) as sub_amount
               , coalesce(aal.product_id, e.timesheet_product_id) as product_id
-              , coalesce(pt.name, 'UNDEFINED') as task_name
+              , coalesce(pt.name, 'OTHER') as task_name
               , array_agg(aal.id) as line_ids
               , pt.id as task_id
          from account_analytic_line as aal

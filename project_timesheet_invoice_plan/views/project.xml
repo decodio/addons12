@@ -9,7 +9,7 @@
                 <field name="currency_id" />
             </field>
             <notebook position="inside">
-                <page string="Invoice plans">
+                <page string="Invoice plans" groups="project.group_project_manager,account.group_account_manager">
                     <button string="Create invoice plan"
                             type="action"
                             name="%(action_create_invoice_plan_wizard)d"
