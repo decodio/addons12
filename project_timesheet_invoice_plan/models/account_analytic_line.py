@@ -36,7 +36,8 @@ class AccountAnalyticLine(models.Model):
         if not values.get('product_id') and values.get('project_id') and values.get('employee_id'):
             employee = self.env['hr.employee'].search(
                 [('id', '=', values.get('employee_id'))], limit=1)
-            values['product_id'] = self.get_employee_timesheet_product(employee)
+            product = self.get_employee_timesheet_product(employee)
+            values['product_id'] = product and product.id or False
         result = super(AccountAnalyticLine, self).create(values)
         return result
 
