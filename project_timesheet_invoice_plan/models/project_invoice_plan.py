@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError
 
@@ -84,7 +84,7 @@ class ProjectInvoicePlan(models.Model):
         product = line.product_id.with_context(force_company=self.company_id.id)
         account = product.property_account_income_id or product.categ_id.property_account_income_categ_id
 
-        if not account and self.product_id:
+        if not account and line.product_id:
             raise UserError(_(
                 'Please define income account for this product: "%s" (id:%d) - or for its category: "%s".') %
                             (line.product_id.name, line.product_id.id,
