@@ -35,7 +35,7 @@
                             <field name="currency_id" />
                         </group>
                         <group>
-                            <field name="invoice_id" attrs="{'invisible':[('invoice_id','=', False)]}"/>
+                            <field name="invoice_id" readonly="1" attrs="{'invisible':[('invoice_id','=', False)]}"/>
                             <button name="invoice_create"
                                     string="Create Invoice"
                                     type="object"
