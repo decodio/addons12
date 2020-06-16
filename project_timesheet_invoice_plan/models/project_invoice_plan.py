@@ -2,7 +2,7 @@
 
 from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, Warning
 
 
 class ProjectInvoicePlan(models.Model):
@@ -18,7 +18,7 @@ class ProjectInvoicePlan(models.Model):
     )
     invoice_id = fields.Many2one(
         comodel_name='account.invoice',
-        string='Invoice'
+        string='Invoice',
     )
     project_id = fields.Many2one(
         comodel_name='project.project',
@@ -49,6 +49,13 @@ class ProjectInvoicePlan(models.Model):
     )
 
     @api.multi
+    def unlink(self):
+        if any(x.invoice_id for x in self):
+            raise Warning(
+                _("You can't delete invoiced invoice plans."))
+        return super(ProjectInvoicePlan, self).unlink()
+
+    @api.multi
     def invoice_create(self):
         invoice_ids = []
         invoice_obj = self.env['account.invoice']
@@ -75,6 +82,7 @@ class ProjectInvoicePlan(models.Model):
             'partner_id': self.partner_id.id,
             'currency_id': self.currency_id.id,
             'company_id': company.id,
+            'date_invoice': self.invoice_date,
         }
         return invoice_vals
 
