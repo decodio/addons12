@@ -16,12 +16,14 @@ class AccountAnalyticLine(models.Model):
         string='Invoice plan line',
         related='project_invoice_plan_line_id.project_invoice_plan_id',
         readonly=True,
+        store=True
     )
     invoice_id = fields.Many2one(
         comodel_name='account.invoice',
         string='Invoice',
         related='project_invoice_plan_id.invoice_id',
         readonly=True,
+        store=True
     )
 
     @api.onchange('employee_id')
