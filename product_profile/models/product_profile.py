@@ -1,7 +1,7 @@
 # © 2015 David BEAL @ Akretion
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from copy import deepcopy
+from copy import deepcopy, copy
 import logging
 from odoo import models, fields, api, _
 from odoo.osv import orm
@@ -17,6 +17,8 @@ PROFILE_MENU = _(
 # not an immutable value according to profile
 PROF_DEFAULT_STR = "profile_default_"
 LEN_DEF_STR = len(PROF_DEFAULT_STR)
+PROF_COPY_STR = "profile_copy_"
+LEN_COPY_STR = len(PROF_COPY_STR)
 
 _logger = logging.getLogger(__name__)
 
@@ -172,9 +174,7 @@ class ProductMixinProfile(models.AbstractModel):
         res = {}
         profile_obj = self.env["product.profile"]
         fields = self._get_profile_fields()
-        profile_vals = profile_obj.browse(product_values["profile_id"]).read(
-            fields
-        )[0]
+        profile_vals = profile_obj.browse(product_values["profile_id"]).read(fields)[0]
         profile_vals.pop("id")
         profile_vals = self._reformat_relationals(profile_vals)
         for key, val in profile_vals.items():
@@ -182,6 +182,8 @@ class ProductMixinProfile(models.AbstractModel):
                 if not ignore_defaults:
                     destination_field = key[LEN_DEF_STR:]
                     res[destination_field] = val
+            elif key[:LEN_COPY_STR] == PROF_COPY_STR:
+                continue
             else:
                 res[key] = val
         return res
@@ -191,6 +193,8 @@ class ProductMixinProfile(models.AbstractModel):
         profile_obj = self.env["product.profile"]
         for key, value in profile_vals.items():
             if value and profile_obj._fields[key].type == "many2one":
+                if key[:LEN_COPY_STR] == PROF_COPY_STR:
+                    continue
                 # m2o value is a tuple
                 res[key] = value[0]
             if profile_obj._fields[key].type == "many2many":
@@ -214,25 +218,44 @@ class ProductMixinProfile(models.AbstractModel):
                     raise UserError(format_except_message(e, field, self))
 
     @api.model
+    def copy_template_relations(self, vals):
+        if not vals.get("profile_id"):
+            return
+        profile_obj = self.env["product.profile"]
+        product_obj = self.env["product.product"]
+        copy_fields = self._get_copy_profile_fields()
+        profile_vals = profile_obj.browse(vals["profile_id"]).read(copy_fields)[0]
+        for key, val in profile_vals.items():
+            if key[:LEN_COPY_STR] == PROF_COPY_STR and val:
+                destination_field = key[LEN_COPY_STR:]
+                product = product_obj.search([('id', '=', val[0])])
+                if product._fields.get(destination_field):
+                    old_vals = product.mapped(destination_field)
+                    for old_val in old_vals:
+                        if 'product_id' in old_val._fields:
+                            old_val.copy({"product_id": self.id})
+                        elif 'product' in old_val._fields:
+                            old_val.copy({"product": self.id})
+        return
+
+    @api.model
     def create(self, vals):
         if vals.get("profile_id"):
-            vals.update(
-                self._get_vals_from_profile(vals, ignore_defaults=False)
-            )
-        return super().create(vals)
+            vals.update(self._get_vals_from_profile(vals, ignore_defaults=False))
+        res = super().create(vals)
+        if res._name == "product.product":
+            res.copy_template_relations(vals)
+        return res
 
     def write(self, vals):
         profile_changed = vals.get("profile_id")
         if profile_changed:
             recs_has_profile = self.filtered(lambda r: r.profile_id)
             recs_no_profile = self - recs_has_profile
-            recs_has_profile.write(
-                self._get_vals_from_profile(vals, ignore_defaults=True)
-            )
-            recs_no_profile.write(
-                self._get_vals_from_profile(vals, ignore_defaults=False)
-            )
-        return super().write(vals)
+            recs_has_profile.write(self._get_vals_from_profile(vals, ignore_defaults=True))
+            recs_no_profile.write(self._get_vals_from_profile(vals, ignore_defaults=False))
+        res = super().write(vals)
+        return res
 
     @api.model
     def _get_default_profile_fields(self):
@@ -241,6 +264,15 @@ class ProductMixinProfile(models.AbstractModel):
             x
             for x in self.env["product.profile"]._fields.keys()
             if x[:LEN_DEF_STR] == PROF_DEFAULT_STR
+        ]
+
+    @api.model
+    def _get_copy_profile_fields(self):
+        " Get profile fields with prefix PROF_COPY_STR "
+        return [
+            x
+            for x in self.env["product.profile"]._fields.keys()
+            if x[:LEN_COPY_STR] == PROF_COPY_STR
         ]
 
     @api.model
