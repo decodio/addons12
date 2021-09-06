@@ -12,8 +12,8 @@
         - 
     """,
 
-    'author': "Decodio Apllications Ltd",
-    'website': "https://www.decod.io",
+    'author': "Ecodica",
+    'website': "https://www.ecodica.eu",
     "licence": "LGPL-3",
 
     'depends': [
