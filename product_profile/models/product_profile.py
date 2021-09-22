@@ -286,7 +286,9 @@ class ProductMixinProfile(models.AbstractModel):
             doc = etree.XML(res["arch"])
             fields = self._get_profile_fields()
             fields_def = self.fields_get(allfields=fields)
-            if self.env.uid not in users_in_profile_group:
+            if 'profile_id' not in fields:
+                attrs = {}
+            elif self.env.uid not in users_in_profile_group:
                 attrs = {"invisible": [("profile_id", "!=", False)]}
             else:
                 attrs = {"readonly": [("profile_id", "!=", False)]}
