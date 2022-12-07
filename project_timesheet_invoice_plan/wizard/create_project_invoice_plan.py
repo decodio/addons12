@@ -94,6 +94,56 @@ class CreateProjectInvoicePlanWizard(models.TransientModel):
         left join product_template pt on pt.id = pp.product_tmpl_id
         group by a.product_id
         """
+        # Check pg version
+        array_cat_args_query = """
+          SELECT pg_get_function_arguments(p.oid) as parameters
+            FROM pg_proc p 
+            JOIN pg_namespace n ON p.pronamespace = n.oid 
+           WHERE p.proname = 'array_cat';"""
+        self.env.cr.execute(array_cat_args_query)
+        res = self.env.cr.fetchone()
+        if not (res and res[0] == "anyarray, anyarray"):
+            product_sql = """
+            DROP AGGREGATE IF EXISTS array_concat_agg(anyarray);
+            DROP AGGREGATE IF EXISTS array_concat_agg(anycompatiblearray);
+            CREATE AGGREGATE array_concat_agg(anycompatiblearray) (
+              SFUNC = array_cat,
+              STYPE = anycompatiblearray
+            );
+            
+            WITH a AS 
+            (
+            select
+                    SUM(aal.unit_amount) as sub_amount
+                  , coalesce(aal.product_id, e.timesheet_product_id) as product_id
+                  , coalesce(pt.name, 'OTHER') as task_name
+                  , array_agg(aal.id) as line_ids
+                  , pt.id as task_id
+             from account_analytic_line as aal
+             join project_project pp on pp.id = aal.project_id
+             left join project_task pt on pt.id = aal.task_id 
+             join hr_employee e on e.id = aal.employee_id
+    
+             where pp.id = %(project_id)s       -- 21
+               and aal.date >= %(date_from)s    --'2019-08-01'::date
+               and aal.date <= %(date_to)s      --'2019-10-01'::date
+               and aal.project_invoice_plan_line_id is NULL
+               and aal.unit_amount > 0.0
+             group by coalesce(aal.product_id, e.timesheet_product_id), pt.id
+            )
+            
+            select a.product_id
+                 , sum(a.sub_amount) amount
+                 , max(pt.name) product_name
+                 , max(pt.list_price) price
+                 , string_agg(a.task_name::varchar || ': ' ||a.sub_amount::varchar, '\n' order by a.task_id) as description
+                 , array_concat_agg(a.line_ids) as account_analytic_lines
+            from a
+            left join product_product pp on pp.id = a.product_id
+            left join product_template pt on pt.id = pp.product_tmpl_id
+            group by a.product_id
+            """
+
         self.env.cr.execute(product_sql, sql_params)
         plan_lines = self.env.cr.dictfetchall()
         if not plan_lines:
